@@ -29,37 +29,31 @@ public class C3StructMemberDeclarationImpl extends C3PsiElementImpl implements C
   @Override
   @Nullable
   public C3Attributes getAttributes() {
-    return PsiTreeUtil.getChildOfType(this, C3Attributes.class);
+    return findChildByClass(C3Attributes.class);
   }
 
   @Override
   @Nullable
   public C3BitstructBody getBitstructBody() {
-    return PsiTreeUtil.getChildOfType(this, C3BitstructBody.class);
+    return findChildByClass(C3BitstructBody.class);
   }
 
   @Override
   @Nullable
   public C3IdentifierList getIdentifierList() {
-    return PsiTreeUtil.getChildOfType(this, C3IdentifierList.class);
+    return findChildByClass(C3IdentifierList.class);
   }
 
   @Override
   @Nullable
   public C3StructBody getStructBody() {
-    return PsiTreeUtil.getChildOfType(this, C3StructBody.class);
+    return findChildByClass(C3StructBody.class);
   }
 
   @Override
   @Nullable
   public C3Type getType() {
-    return PsiTreeUtil.getChildOfType(this, C3Type.class);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getIdent() {
-    return findChildByType(IDENT);
+    return findChildByClass(C3Type.class);
   }
 
 }

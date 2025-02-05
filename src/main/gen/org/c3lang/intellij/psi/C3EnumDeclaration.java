@@ -10,7 +10,7 @@ public interface C3EnumDeclaration extends C3PsiElement {
   @Nullable
   C3Attributes getAttributes();
 
-  @NotNull
+  @Nullable
   C3EnumList getEnumList();
 
   @Nullable
@@ -19,7 +19,7 @@ public interface C3EnumDeclaration extends C3PsiElement {
   @Nullable
   C3InterfaceImpl getInterfaceImpl();
 
-  @NotNull
+  @Nullable
   C3TypeName getTypeName();
 
 }

@@ -29,25 +29,7 @@ public class C3AccessIdentImpl extends C3PsiElementImpl implements C3AccessIdent
   @Override
   @Nullable
   public C3Expr getExpr() {
-    return PsiTreeUtil.getChildOfType(this, C3Expr.class);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getAtIdent() {
-    return findChildByType(AT_IDENT);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getHashIdent() {
-    return findChildByType(HASH_IDENT);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getIdent() {
-    return findChildByType(IDENT);
+    return findChildByClass(C3Expr.class);
   }
 
 }

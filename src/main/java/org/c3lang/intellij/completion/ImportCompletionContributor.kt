@@ -1,88 +1,89 @@
-package org.c3lang.intellij.completion;
+package org.c3lang.intellij.completion
 
-import com.intellij.codeInsight.completion.*;
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.TextRange;
-import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.codeStyle.MinusculeMatcher;
-import com.intellij.psi.codeStyle.NameUtil;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.stubs.StubIndex;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.ProcessingContext;
-import org.c3lang.intellij.index.C3ModuleIndex;
-import org.c3lang.intellij.psi.*;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.codeInsight.completion.*
+import com.intellij.codeInsight.lookup.LookupElement
+import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.util.TextRange
+import com.intellij.patterns.PlatformPatterns.psiElement
+import com.intellij.patterns.StandardPatterns.or
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.stubs.StubIndex
+import com.intellij.util.ProcessingContext
+import org.c3lang.intellij.index.ModuleIndex
+import org.c3lang.intellij.psi.*
 
-import static com.intellij.patterns.PlatformPatterns.psiElement;
+@Suppress("DuplicatedCode")
+object ImportCompletionContributor : CompletionProvider<CompletionParameters>() {
+    private val log = Logger.getInstance(ImportCompletionContributor::class.java)
+    private val pattern = or(
+        // foo::<caret>
+        psiElement().inside(C3PathIdent::class.java),
+    )
 
-public class ImportCompletionContributor extends CompletionContributor {
-    private final static Logger log = Logger.getInstance(ImportCompletionContributor.class.getName());
+    override fun addCompletions(
+        parameters: CompletionParameters,
+        context: ProcessingContext,
+        result: CompletionResultSet
+    ) {
+        val originalPosition = parameters.originalPosition
 
-    public ImportCompletionContributor() {
-        final var psiElementCapture = PlatformPatterns.or(
-                psiElement().inside(C3ImportPath.class)
-        );
+        if (!pattern.accepts(originalPosition)) {
+            return
+        }
 
-        extend(CompletionType.BASIC, psiElementCapture, new CompletionProvider<>() {
-            @Override
-            protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet result) {
-                final Project project = parameters.getOriginalFile().getProject();
-                final C3ImportPath importPath = PsiTreeUtil.getParentOfType(parameters.getPosition(), C3ImportPath.class);
-                if (importPath == null) {
-                    return;
-                }
+        parameters.moduleDefinition ?: return
+        val elementRange = parameters.textRange
+        val matcher = parameters.matcher
+        val moduleDefinition = parameters.moduleDefinition ?: return
+        val project = parameters.position.project
 
-                final TextRange range = TextRange.create(
-                        importPath.getTextRange().getStartOffset(),
-                        parameters.getEditor().getCaretModel().getOffset()
-                );
-                final String query = parameters.getEditor().getDocument().getText(range).trim();
+        StubIndex.getInstance().getAllKeys(
+            ModuleIndex.KEY,
+            project
+        ).asSequence().filter { matcher.matches(it) || it.isBlank() }.flatMap { key ->
+            StubIndex.getElements(
+                ModuleIndex.KEY,
+                key,
+                project,
+                GlobalSearchScope.allScope(project),
+                C3PsiElement::class.java
+            )
+        }.filterIsInstance<C3Module>().map { module ->
 
-                final MinusculeMatcher nameMatcher = NameUtil.buildMatcher(query, NameUtil.MatchingCaseSensitivity.NONE);
+            val params = module.moduleParams
 
-                StubIndex.getInstance()
-                        .getAllKeys(C3ModuleIndex.KEY, project).stream()
-                        .filter(module -> query.isBlank() || nameMatcher.matches(module))
-                        .flatMap(key -> StubIndex.getElements(C3ModuleIndex.KEY, key, project, GlobalSearchScope.allScope(project), C3Module.class).stream())
-                        .map(module -> {
-                            final C3ModuleParams params = module.getModuleParams();
-
-                            final StringBuilder tail = new StringBuilder();
-                            if (params != null) {
-                                tail.append("(<").append(params.getText()).append(">)");
-                            }
-                            final var attributes = module.getAttributes();
-                            if (attributes != null) {
-                                tail.append(" ").append(attributes.getText());
-                            }
-
-                            return LookupElementBuilder.create(C3PsiExtensionsKt.getModuleName(module))
-                                    .withTailText(tail.toString(), true)
-                                    .withInsertHandler(new FunctionInsertHandler(range));
-
-                        }).distinct().forEach(result::addElement);
+            val tail = StringBuilder()
+            if (params != null) {
+                tail.append("(<").append(params.text).append(">)")
             }
-        });
+            val attributes = module.attributes
+            if (attributes != null) {
+                tail.append(" ").append(attributes.text)
+            }
+            LookupElementBuilder.create(checkNotNull(module.moduleName).value)
+                .withTailText(tail.toString(), true)
+                .withInsertHandler(ImportInsertHandler(elementRange, moduleDefinition))
+        }.distinct().forEach(result::addElement)
     }
 
-    private record FunctionInsertHandler(TextRange range) implements InsertHandler<LookupElement> {
-        @Override
-        public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement item) {
-            final Editor editor = context.getEditor();
-            final Document document = editor.getDocument();
-            final String textToInsert = item.getLookupString();
+    @JvmRecord
+    private data class ImportInsertHandler(val range: TextRange, val moduleDefinition: C3ModuleDefinition) :
+        InsertHandler<LookupElement> {
+        override fun handleInsert(context: InsertionContext, item: LookupElement) {
+            val editor = context.editor
+            val document = editor.document
+            val element = item.psiElement as C3FullyQualifiedNamePsiElement
+            val textToInsert = element.fqName.fullName
 
-            document.replaceString(
-                    range.getStartOffset(),
-                    editor.getCaretModel().getOffset(),
+            WriteCommandAction.runWriteCommandAction(context.project) {
+                document.replaceString(
+                    range.startOffset,
+                    editor.caretModel.offset,
                     textToInsert
-            );
+                )
+            }
         }
     }
 }
