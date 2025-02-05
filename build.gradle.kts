@@ -21,6 +21,9 @@ version = properties("pluginVersion").get()
 
 kotlin {
     jvmToolchain(17)
+    compilerOptions {
+        freeCompilerArgs.add("-Xjvm-default=all-compatibility")
+    }
 }
 
 // Configure project's dependencies

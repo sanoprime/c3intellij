@@ -16,10 +16,10 @@ public interface C3DistinctDeclaration extends C3PsiElement {
   @Nullable
   C3InterfaceImpl getInterfaceImpl();
 
-  @NotNull
+  @Nullable
   C3Type getType();
 
-  @NotNull
+  @Nullable
   C3TypeName getTypeName();
 
 }

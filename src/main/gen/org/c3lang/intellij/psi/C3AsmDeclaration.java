@@ -10,7 +10,7 @@ public interface C3AsmDeclaration extends C3PsiElement {
   @Nullable
   C3Attributes getAttributes();
 
-  @NotNull
+  @Nullable
   C3Expr getExpr();
 
 }

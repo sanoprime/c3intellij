@@ -29,19 +29,19 @@ public class C3LocalDeclarationStmtImpl extends C3PsiElementImpl implements C3Lo
   @Override
   @Nullable
   public C3DeclStmtAfterType getDeclStmtAfterType() {
-    return PsiTreeUtil.getChildOfType(this, C3DeclStmtAfterType.class);
+    return findChildByClass(C3DeclStmtAfterType.class);
   }
 
   @Override
   @Nullable
   public C3LocalDeclStorage getLocalDeclStorage() {
-    return PsiTreeUtil.getChildOfType(this, C3LocalDeclStorage.class);
+    return findChildByClass(C3LocalDeclStorage.class);
   }
 
   @Override
   @NotNull
   public C3OptionalType getOptionalType() {
-    return notNullChild(PsiTreeUtil.getChildOfType(this, C3OptionalType.class));
+    return findNotNullChildByClass(C3OptionalType.class);
   }
 
 }

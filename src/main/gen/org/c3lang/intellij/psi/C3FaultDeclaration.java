@@ -13,7 +13,7 @@ public interface C3FaultDeclaration extends C3PsiElement {
   @Nullable
   C3InterfaceImpl getInterfaceImpl();
 
-  @NotNull
+  @Nullable
   C3TypeName getTypeName();
 
 }
