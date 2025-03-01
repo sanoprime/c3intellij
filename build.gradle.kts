@@ -12,7 +12,7 @@ plugins {
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
     alias(libs.plugins.grammarkit)
-    kotlin("jvm")
+    alias(libs.plugins.kotlin) // Kotlin support
 }
 
 group = properties("pluginGroup").get()
