@@ -15,12 +15,15 @@ plugins {
     alias(libs.plugins.kotlin) // Kotlin support
 }
 
-group = properties("pluginGroup").get()
-version = properties("pluginVersion").get()
+group = providers.gradleProperty("pluginGroup").get()
+version = providers.gradleProperty("pluginVersion").get()
 
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
+    compilerOptions {
+        freeCompilerArgs.add("-Xjvm-default=all-compatibility")
+    }
 }
 
 // Configure project's dependencies
@@ -30,6 +33,34 @@ repositories {
     // IntelliJ Platform Gradle Plugin Repositories Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
     intellijPlatform {
         defaultRepositories()
+
+        localPlatformArtifacts {
+            content {
+                includeGroup("bundledPlugin")
+            }
+        }
+        marketplace {
+            content {
+                includeGroup("com.jetbrains.plugins")
+                includeGroup("nightly.com.jetbrains.plugins")
+            }
+        }
+        snapshots {
+            content {
+                includeModule("com.jetbrains.intellij.clion", "clion")
+                includeModule("com.jetbrains.intellij.idea", "ideaIC")
+                includeModule("com.jetbrains.intellij.idea", "ideaIU")
+                includeModule("com.jetbrains.intellij.rider", "riderRD")
+            }
+        }
+        releases {
+            content {
+                includeModule("com.jetbrains.intellij.rider", "riderRD")
+                includeModule("com.jetbrains.intellij.clion", "clion")
+                includeModule("com.jetbrains.intellij.idea", "ideaIC")
+                includeModule("com.jetbrains.intellij.idea", "ideaIU")
+            }
+        }
     }
 }
 
@@ -47,7 +78,7 @@ sourceSets {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
 }
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
@@ -185,9 +216,9 @@ tasks {
 //    }
 
     patchPluginXml {
-        version = properties("pluginVersion")
-        sinceBuild = properties("pluginSinceBuild")
-        untilBuild = properties("pluginUntilBuild")
+        version = providers.gradleProperty("pluginVersion").get()
+        sinceBuild = providers.gradleProperty("pluginSinceBuild")
+        untilBuild = providers.gradleProperty("pluginUntilBuild")
 
         // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
         pluginDescription = providers.fileContents(layout.projectDirectory.file("README.md")).asText.map {
