@@ -63,11 +63,6 @@
                      level="WARNING"
                      implementationClass="org.c3lang.intellij.intention.ImportModuleInspection"
     />
-    <localInspection language="C3"
-                     enabledByDefault="true"
-                     displayName="Log references"
-                     groupName="Debug"
-                     implementationClass="org.c3lang.intellij.intention.LogReferencesInspection" />
 
     <!--<gotoDeclarationHandler implementation="org.c3lang.intellij.actions.C3GotoDeclarationHandler"/>-->
 
