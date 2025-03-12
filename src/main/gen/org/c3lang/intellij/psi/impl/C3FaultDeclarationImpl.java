@@ -28,8 +28,8 @@ public class C3FaultDeclarationImpl extends C3PsiElementImpl implements C3FaultD
 
   @Override
   @NotNull
-  public List<C3Attributes> getAttributesList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, C3Attributes.class);
+  public List<C3FaultDefinition> getFaultDefinitionList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, C3FaultDefinition.class);
   }
 
 }

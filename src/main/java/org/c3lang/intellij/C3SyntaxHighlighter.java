@@ -9,6 +9,7 @@ import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.c3lang.intellij.lexer.C3LexerAdapter;
+import org.c3lang.intellij.psi.C3Type;
 import org.c3lang.intellij.psi.C3Types;
 import org.jetbrains.annotations.NotNull;
 
@@ -61,6 +62,8 @@ public class C3SyntaxHighlighter extends SyntaxHighlighterBase
     public final static TextAttributesKey PARENTHESES_KEY = createTextAttributesKey("C3_PARENTHESES", DefaultLanguageHighlighterColors.PARENTHESES);
     public final static TextAttributesKey IDENTIFIER_KEY = createTextAttributesKey("C3_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER);
     public final static TextAttributesKey COMMA_KEY = createTextAttributesKey("C3_COMMA", DefaultLanguageHighlighterColors.COMMA);
+    public final static TextAttributesKey CONST_IDENT_FAULT_KEY = createTextAttributesKey("C3_CONST_IDENT_FAULT", DefaultLanguageHighlighterColors.CONSTANT);
+    public final static TextAttributesKey CONST_IDENT_FAULT_QUESTION_KEY = createTextAttributesKey("C3_CONST_IDENT_FAULT_QUESTION", DefaultLanguageHighlighterColors.KEYWORD);
 
     public final static TextAttributesKey LABEL_KEY = createTextAttributesKey("C3_LABEL", DefaultLanguageHighlighterColors.LABEL);
     public final static TextAttributesKey EOS_KEY = createTextAttributesKey("C3_EOS", DefaultLanguageHighlighterColors.SEMICOLON);
@@ -125,16 +128,16 @@ public class C3SyntaxHighlighter extends SyntaxHighlighterBase
         addMapping(LINE_COMMENT_KEY, C3ParserDefinition.LINE_COMMENT);
         addMapping(BLOCK_COMMENT_KEY, C3ParserDefinition.BLOCK_COMMENT);
         addMapping(DOC_COMMENT_KEY, C3ParserDefinition.DOC_COMMENT);
+        addMapping(CONST_IDENT_FAULT_KEY, C3SyntaxHighlighterLexer.CONST_IDENT_FAULT);
+        addMapping(CONST_IDENT_FAULT_QUESTION_KEY, C3SyntaxHighlighterLexer.CONST_IDENT_FAULT_QUESTION);
     }
 
     @NotNull
     @Override
     public Lexer getHighlightingLexer()
     {
-        return new C3LexerAdapter();
+        return new C3SyntaxHighlighterLexer();
     }
-
-
 
     @Override
     public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType)
