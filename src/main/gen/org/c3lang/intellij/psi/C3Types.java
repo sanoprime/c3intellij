@@ -96,6 +96,7 @@ public interface C3Types {
   IElementType EXPR_STMT = new C3ElementType("EXPR_STMT");
   IElementType EXPR_TERMINATOR = new C3ElementType("EXPR_TERMINATOR");
   IElementType FAULT_DECLARATION = new C3ElementType("FAULT_DECLARATION");
+  IElementType FAULT_DEFINITION = new C3ElementType("FAULT_DEFINITION");
   IElementType FLAT_PATH = new C3ElementType("FLAT_PATH");
   IElementType FLOAT_TYPE = new C3ElementType("FLOAT_TYPE");
   IElementType FN_PARAMETER_LIST = new C3ElementType("FN_PARAMETER_LIST");
@@ -628,6 +629,9 @@ public interface C3Types {
       }
       else if (type == FAULT_DECLARATION) {
         return new C3FaultDeclarationImpl(node);
+      }
+      else if (type == FAULT_DEFINITION) {
+        return new C3FaultDefinitionImpl(node);
       }
       else if (type == FLAT_PATH) {
         return new C3FlatPathImpl(node);

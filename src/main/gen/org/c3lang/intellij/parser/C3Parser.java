@@ -2660,49 +2660,55 @@ public class C3Parser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // KW_FAULT CONST_IDENT attributes? (COMMA CONST_IDENT attributes?)? EOS
+  // KW_FAULT fault_definition (COMMA fault_definition)? EOS
   public static boolean fault_declaration(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "fault_declaration")) return false;
     if (!nextTokenIs(b, KW_FAULT)) return false;
     boolean r, p;
     Marker m = enter_section_(b, l, _NONE_, FAULT_DECLARATION, null);
-    r = consumeTokens(b, 2, KW_FAULT, CONST_IDENT);
+    r = consumeToken(b, KW_FAULT);
+    r = r && fault_definition(b, l + 1);
     p = r; // pin = 2
     r = r && report_error_(b, fault_declaration_2(b, l + 1));
-    r = p && report_error_(b, fault_declaration_3(b, l + 1)) && r;
     r = p && consumeToken(b, EOS) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;
   }
 
-  // attributes?
+  // (COMMA fault_definition)?
   private static boolean fault_declaration_2(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "fault_declaration_2")) return false;
-    attributes(b, l + 1);
+    fault_declaration_2_0(b, l + 1);
     return true;
   }
 
-  // (COMMA CONST_IDENT attributes?)?
-  private static boolean fault_declaration_3(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "fault_declaration_3")) return false;
-    fault_declaration_3_0(b, l + 1);
-    return true;
-  }
-
-  // COMMA CONST_IDENT attributes?
-  private static boolean fault_declaration_3_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "fault_declaration_3_0")) return false;
+  // COMMA fault_definition
+  private static boolean fault_declaration_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "fault_declaration_2_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, COMMA, CONST_IDENT);
-    r = r && fault_declaration_3_0_2(b, l + 1);
+    r = consumeToken(b, COMMA);
+    r = r && fault_definition(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
+  /* ********************************************************** */
+  // CONST_IDENT attributes?
+  public static boolean fault_definition(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "fault_definition")) return false;
+    if (!nextTokenIs(b, CONST_IDENT)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, CONST_IDENT);
+    r = r && fault_definition_1(b, l + 1);
+    exit_section_(b, m, FAULT_DEFINITION, r);
+    return r;
+  }
+
   // attributes?
-  private static boolean fault_declaration_3_0_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "fault_declaration_3_0_2")) return false;
+  private static boolean fault_definition_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "fault_definition_1")) return false;
     attributes(b, l + 1);
     return true;
   }
@@ -5451,7 +5457,6 @@ public class C3Parser implements PsiParser, LightPsiParser {
 
   /* ********************************************************** */
   // struct_declaration
-  //     | fault_declaration
   //     | enum_declaration
   //     | bitstruct_declaration
   public static boolean type_decl(PsiBuilder b, int l) {
@@ -5459,7 +5464,6 @@ public class C3Parser implements PsiParser, LightPsiParser {
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, TYPE_DECL, "<type decl>");
     r = struct_declaration(b, l + 1);
-    if (!r) r = fault_declaration(b, l + 1);
     if (!r) r = enum_declaration(b, l + 1);
     if (!r) r = bitstruct_declaration(b, l + 1);
     exit_section_(b, l, m, r, false, null);
